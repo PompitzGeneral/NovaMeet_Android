@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Users/pompi/dev/NovaMeet/novameet_android/app/src/main/res/layout/activity_main.xml" value="0.1" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet/novameet_android/app/src/main/res/layout/fragment_dashboard.xml" value="0.1" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/drawable-v24/ic_launcher_foreground.xml" value="0.26979166666666665" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/drawable/ic_baseline_mic_24.xml" value="0.12407407407407407" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/drawable/ic_baseline_mic_off_24.xml" value="0.12407407407407407" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/drawable/ic_close_24px.xml" value="0.17916666666666667" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/drawable/ic_dashboard_black_24dp.xml" value="0.26979166666666665" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/drawable/ic_edit_24px.xml" value="0.17916666666666667" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/drawable/ic_favorite.xml" value="0.17916666666666667" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/drawable/ic_home_black_24dp.xml" value="0.26979166666666665" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/drawable/ic_launcher_background.xml" value="0.26979166666666665" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/drawable/ic_menu.xml" value="0.17916666666666667" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/drawable/ic_notifications_black_24dp.xml" value="0.26979166666666665" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/drawable/ic_person.xml" value="0.175" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/drawable/round_button.xml" value="0.17916666666666667" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/activity_chat.xml" value="0.12864583333333332" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/activity_login.xml" value="0.4" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/activity_main.xml" value="0.264" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/activity_main_ori.xml" value="0.15885416666666666" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/activity_member.xml" value="0.1" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/activity_profile.xml" value="0.4466666666666667" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/activity_register.xml" value="0.2515625" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/activity_room.xml" value="0.13333333333333333" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/activity_room_create.xml" value="0.264" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/activity_room_ori.xml" value="0.1578125" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/activity_room_ori2.xml" value="0.25364583333333335" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/dialog_room_password.xml" value="0.13333333333333333" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/fragment_dashboard.xml" value="0.19610507246376813" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/fragment_home.xml" value="0.1268462206776716" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/fragment_notifications.xml" value="0.19610507246376813" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/fragment_record.xml" value="0.152" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/item_room.xml" value="0.4" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/item_surface_view_renderer.xml" value="0.25364583333333335" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/menu/bottom_nav_menu.xml" value="0.25364583333333335" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/menu/tool_bar_menu.xml" value="0.4" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.26979166666666665" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.26979166666666665" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="Android Studio default JDK" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>

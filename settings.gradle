@@ -1,0 +1,14 @@
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        jcenter()
+        // JCenter 지원 중단(220201)
+        // mavenCentral()로 패키지 이전 필요
+        // 현재 mavenCentral적용 시 implementation 'org.webrtc:google-webrtc:1.0.+'인식못함
+        // mavenCentral()
+        // 참고자료 : https://developer.android.com/studio/build/jcenter-migration?hl=ko
+    }
+}
+rootProject.name = "NovaMeet"
+include ':app'

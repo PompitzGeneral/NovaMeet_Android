@@ -1,0 +1,23 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+buildscript {
+    repositories {
+        google()
+        jcenter()
+        // JCenter 지원 중단(220201)
+        // mavenCentral()로 패키지 이전 필요
+        // 현재 mavenCentral적용 시 implementation 'org.webrtc:google-webrtc:1.0.+'인식못함
+        // mavenCentral()
+        // 참고자료 : https://developer.android.com/studio/build/jcenter-migration?hl=ko
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:7.0.1"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.21"
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
