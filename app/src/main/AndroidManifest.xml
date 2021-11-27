@@ -7,6 +7,7 @@
     <uses-feature
         android:glEsVersion="0x00020000"
         android:required="true" />
+<!--    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />-->
 
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
@@ -33,7 +34,7 @@
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".chat.ChatActivity"
+            android:name="com.example.novameet.room.chat.ChatActivity"
             android:exported="true"
             android:screenOrientation="portrait" />
         <activity
@@ -69,8 +70,9 @@
         </activity>
         <service
             android:name=".room.RoomService"
+            android:enabled="true"
             android:exported="false"
-            android:description="room_service_description">
+            >
             <!--
             android:exported="false" : 다른 앱과 상호작용 하지 않음
             android:description="room_service_description" : 서비스에 대한 설명 기재

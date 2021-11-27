@@ -1,34 +1,24 @@
 package com.example.novameet.room
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 
 import android.animation.ObjectAnimator
-import android.annotation.TargetApi
+import android.app.Service
+import android.content.ComponentName
 import android.content.Intent
+import android.content.ServiceConnection
 import android.content.pm.PackageManager
-import android.content.res.ColorStateList
-import android.graphics.Color
-import android.media.projection.MediaProjection
-import android.media.projection.MediaProjectionManager
-import android.os.Build
 import android.os.Bundle
-import android.util.DisplayMetrics
+import android.os.IBinder
 import android.util.Log
 import android.view.View
-import android.view.Window
-import android.view.WindowManager
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.transition.Visibility
 import com.example.novameet.databinding.ActivityRoomBinding
 import com.example.novameet.model.User
 import com.example.novameet.R
-import com.example.novameet.chat.ChatActivity
-import com.example.novameet.home.RoomsRecyclerViewAdapter
-import com.example.novameet.member.MemberActivity
+import com.example.novameet.model.ChatMessage
+import com.example.novameet.room.chat.ChatActivity
 import com.example.novameet.network.RetrofitManager
 import com.example.novameet.room.WebRTC.*
 
@@ -48,13 +38,38 @@ class RoomActivity : AppCompatActivity() {
 
     private var mainFabIsOpen: Boolean = false
 
-    private var roomConnectionParameters: RoomConnectionParameters? = null
-    private var peerConnectionParameters: PeerConnectionParameters? = null
-
-    private var screencaptureEnabled = false
-
     private var isVideoEnabled = true
     private var isMicEnabled = true
+
+    // region Bind Service
+    private val binderExtendedServiceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            roomServiceBinder = service as RoomService.RoomServiceBinder
+
+            // Todo. 리팩토링 필요
+            roomServiceBinder?.service?.setWebRTCManager(intent, rootEglBase, binding.recyclerView)
+            roomServiceBinder?.service?.startWebRTCManager()
+
+            roomServiceBinder?.service?.setChatManager(loginUser, roomId)
+            roomServiceBinder?.service?.startChatManager()
+
+            val myToast = Toast.makeText(applicationContext,
+                "BinderExtendedService - onServiceConnected",
+                Toast.LENGTH_SHORT)
+            myToast.show()
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            roomServiceBinder = null
+
+            val myToast = Toast.makeText(applicationContext,
+                "BinderExtendedService - onServiceDisconnected",
+                Toast.LENGTH_SHORT)
+            myToast.show()
+        }
+    }
+    private var roomServiceBinder: RoomService.RoomServiceBinder? = null
+    // endregion
 
     // List of mandatory application permissions.
     private val MANDATORY_PERMISSIONS = arrayOf(
@@ -63,19 +78,12 @@ class RoomActivity : AppCompatActivity() {
         "android.permission.INTERNET"
     )
 
-    // Peer connection statistics callback period in ms.
-
-    private var webRTCManager: WebRTCManager? = null
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
 
         Thread.setDefaultUncaughtExceptionHandler(UnhandledExceptionHandler(this))
 
-        initWindow()
-        initFab()
         // 권한 체크, 권한 없을 시 Activity Finish
         checkMandatoryPermissions()
 
@@ -88,38 +96,33 @@ class RoomActivity : AppCompatActivity() {
             return
         }
 
+        val signalingServerUri = intent.getStringExtra(WebRTCProperties.EXTRA_SIGNALING_URI)
+        if (signalingServerUri == null) {
+            Log.e(TAG, "Didn't get any URL in intent!")
+            setResult(RESULT_CANCELED)
+            finish()
+            return
+        }
+
+        initWindow()
+        initFab()
 
         binding?.recyclerView?.adapter = SurfaceViewAdapter(
             rootEglBase, this.windowManager.defaultDisplay
         )
         binding?.recyclerView?.layoutManager = GridLayoutManager(this, 1)
 
-        initParameters()
-
-        webRTCManager = WebRTCManager(
-            applicationContext,
-            binding?.recyclerView,
-            peerConnectionParameters,
-            roomConnectionParameters,
-            rootEglBase
-        )
-
-        webRTCManager?.setUseCamara2(intent.getBooleanExtra(WebRTCProperties.EXTRA_CAMERA2,true))
-        webRTCManager?.setIsCaptureToTexture(intent.getBooleanExtra(WebRTCProperties.EXTRA_CAPTURETOTEXTURE_ENABLED, false))
-        webRTCManager?.start()
+        startRoomService()
     }
 
-    override fun onStop() {
-        super.onStop()
+    private fun startRoomService() {
+        Intent(this, RoomService::class.java).run {
+            bindService(this, binderExtendedServiceConnection, Service.BIND_AUTO_CREATE)
+        }
     }
 
-    override fun onStart() {
-        super.onStart()
-    }
-
-    override fun onDestroy() {
-        webRTCManager?.stop();
-        super.onDestroy()
+    private fun stopRoomService() {
+        unbindService(binderExtendedServiceConnection)
     }
 
     private fun initWindow() {
@@ -130,23 +133,6 @@ class RoomActivity : AppCompatActivity() {
 //                    or WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED or WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON
 //        )
 //        window.decorView.systemUiVisibility = getSystemUiVisibility()
-    }
-
-    @TargetApi(17)
-    private fun getDisplayMetrics(): DisplayMetrics? {
-        val displayMetrics = DisplayMetrics()
-        val windowManager = application.getSystemService(AppCompatActivity.WINDOW_SERVICE) as WindowManager
-        windowManager.defaultDisplay.getRealMetrics(displayMetrics)
-        return displayMetrics
-    }
-
-    @TargetApi(19)
-    private fun getSystemUiVisibility(): Int {
-        var flags = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or View.SYSTEM_UI_FLAG_FULLSCREEN
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            flags = flags or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-        }
-        return flags
     }
 
     private fun initFab() {
@@ -182,10 +168,14 @@ class RoomActivity : AppCompatActivity() {
             requestDeleteRoom()
         }
         binding.callEndFab.setOnClickListener {
+            stopRoomService()
             finish()
         }
         binding.chatFab.setOnClickListener {
-            startActivity(Intent(this, ChatActivity::class.java))
+            var intent = Intent(this, ChatActivity::class.java)
+            intent.putExtra("loginUserID", loginUser?.userID)
+
+            startActivity(intent)
         }
 
         /*
@@ -198,7 +188,7 @@ class RoomActivity : AppCompatActivity() {
         binding.micFab.setOnClickListener {
             isMicEnabled = !isMicEnabled
             // 오디오 끄기 and 화상채팅방 참여자들에게 상태변경 메시지 전송
-            webRTCManager?.setMicEnabled(isMicEnabled)
+            roomServiceBinder?.service?.setMicEnabled(isMicEnabled)
             //Floating Action Button 색상/아이콘 변경
             if (isMicEnabled) {
                 binding.micFab.setImageResource(R.drawable.ic_baseline_mic_24)
@@ -220,7 +210,7 @@ class RoomActivity : AppCompatActivity() {
         binding.videoFab.setOnClickListener {
             isVideoEnabled = !isVideoEnabled
             // 화면 끄기 and 화상채팅방 참여자들에게 상태변경 메시지 전송
-            webRTCManager?.setVideoEnabled(isVideoEnabled)
+            roomServiceBinder?.service?.setVideoEnabled(isVideoEnabled)
             // Floating Action Button 색상/아이콘 변경
             if (isVideoEnabled) {
                 binding.videoFab.setImageResource(R.drawable.ic_baseline_videocam_24)
@@ -232,75 +222,6 @@ class RoomActivity : AppCompatActivity() {
                     AppCompatResources.getColorStateList(this, R.color.red_fab)
             }
         }
-    }
-
-    private fun initParameters() {
-        val signalingServerUri = intent.getStringExtra(WebRTCProperties.EXTRA_SIGNALING_URI)
-        if (signalingServerUri == null) {
-            Log.e(TAG, "Didn't get any URL in intent!")
-            setResult(RESULT_CANCELED)
-            finish()
-            return
-        }
-
-        val loopback = intent.getBooleanExtra(WebRTCProperties.EXTRA_LOOPBACK, false)
-        val tracing = intent.getBooleanExtra(WebRTCProperties.EXTRA_TRACING, false)
-
-        var videoWidth = intent.getIntExtra(WebRTCProperties.EXTRA_VIDEO_WIDTH, 240)
-        var videoHeight = intent.getIntExtra(WebRTCProperties.EXTRA_VIDEO_HEIGHT, 240)
-
-        screencaptureEnabled = intent.getBooleanExtra(WebRTCProperties.EXTRA_SCREENCAPTURE, false)
-        // If capturing format is not specified for screencapture, use screen resolution.
-        if (screencaptureEnabled && videoWidth == 0 && videoHeight == 0) {
-            val displayMetrics = getDisplayMetrics()
-            videoWidth  = displayMetrics!!.widthPixels
-            videoHeight = displayMetrics.heightPixels
-        }
-        var dataChannelParameters: DataChannelParameters? = null
-        if (intent.getBooleanExtra(WebRTCProperties.EXTRA_DATA_CHANNEL_ENABLED, false)) {
-            dataChannelParameters = DataChannelParameters(
-                intent.getBooleanExtra(WebRTCProperties.EXTRA_ORDERED, true),
-                intent.getIntExtra(WebRTCProperties.EXTRA_MAX_RETRANSMITS_MS, -1),
-                intent.getIntExtra(WebRTCProperties.EXTRA_MAX_RETRANSMITS, -1),
-                intent.getStringExtra(WebRTCProperties.EXTRA_PROTOCOL),
-                intent.getBooleanExtra(WebRTCProperties.EXTRA_NEGOTIATED, false),
-                intent.getIntExtra(WebRTCProperties.EXTRA_ID, -1)
-            )
-        }
-
-        peerConnectionParameters = PeerConnectionParameters(
-            intent.getBooleanExtra(WebRTCProperties.EXTRA_VIDEO_CALL, true),
-            loopback,
-            tracing,
-            videoWidth,
-            videoHeight,
-            intent.getIntExtra(WebRTCProperties.EXTRA_VIDEO_FPS, 0),
-            intent.getIntExtra(WebRTCProperties.EXTRA_VIDEO_BITRATE, 0),
-            intent.getStringExtra(WebRTCProperties.EXTRA_VIDEOCODEC),
-            intent.getBooleanExtra(WebRTCProperties.EXTRA_HWCODEC_ENABLED, true),
-            intent.getBooleanExtra(WebRTCProperties.EXTRA_FLEXFEC_ENABLED, false),
-            intent.getIntExtra(WebRTCProperties.EXTRA_AUDIO_BITRATE, 0),
-            intent.getStringExtra(WebRTCProperties.EXTRA_AUDIOCODEC),
-            intent.getBooleanExtra(WebRTCProperties.EXTRA_NOAUDIOPROCESSING_ENABLED, false),
-            intent.getBooleanExtra(WebRTCProperties.EXTRA_AECDUMP_ENABLED, false),
-            intent.getBooleanExtra(WebRTCProperties.EXTRA_SAVE_INPUT_AUDIO_TO_FILE_ENABLED, false),
-            intent.getBooleanExtra(WebRTCProperties.EXTRA_OPENSLES_ENABLED, false),
-            intent.getBooleanExtra(WebRTCProperties.EXTRA_DISABLE_BUILT_IN_AEC, false),
-            intent.getBooleanExtra(WebRTCProperties.EXTRA_DISABLE_BUILT_IN_AGC, false),
-            intent.getBooleanExtra(WebRTCProperties.EXTRA_DISABLE_BUILT_IN_NS, false),
-            intent.getBooleanExtra(WebRTCProperties.EXTRA_DISABLE_WEBRTC_AGC_AND_HPF, false),
-            intent.getBooleanExtra(WebRTCProperties.EXTRA_ENABLE_RTCEVENTLOG, false),
-            dataChannelParameters
-        )
-
-        // Create connection parameters.
-        roomConnectionParameters = RoomConnectionParameters(
-            signalingServerUri,
-            loginUser,
-            roomId,
-            isRoomOwner,
-            loopback,
-        )
     }
 
     private fun checkMandatoryPermissions() {
@@ -327,5 +248,6 @@ class RoomActivity : AppCompatActivity() {
 
         // 2. Chat Server에게 leave_all 요청
         // gChatSocket.emit('leave_all');
+        // 응답 받았을 때 stopRoomService
     }
 }

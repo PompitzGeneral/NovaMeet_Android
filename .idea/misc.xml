@@ -18,7 +18,7 @@
         <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/drawable/ic_notifications_black_24dp.xml" value="0.26979166666666665" />
         <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/drawable/ic_person.xml" value="0.175" />
         <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/drawable/round_button.xml" value="0.17916666666666667" />
-        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/activity_chat.xml" value="0.12864583333333332" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/activity_chat.xml" value="0.264" />
         <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/activity_login.xml" value="0.4" />
         <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/activity_main.xml" value="0.264" />
         <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/activity_main_ori.xml" value="0.15885416666666666" />
@@ -34,6 +34,12 @@
         <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/fragment_home.xml" value="0.1268462206776716" />
         <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/fragment_notifications.xml" value="0.19610507246376813" />
         <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/fragment_record.xml" value="0.152" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/item_chat_me.xml" value="0.4979757085020243" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/item_chat_message_me.xml" value="0.4" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/item_chat_message_other.xml" value="0.264" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/item_chat_message_received.xml" value="0.4" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/item_chat_message_sent.xml" value="0.4" />
+        <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/item_chat_other.xml" value="0.264" />
         <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/item_room.xml" value="0.4" />
         <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/layout/item_surface_view_renderer.xml" value="0.25364583333333335" />
         <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/menu/bottom_nav_menu.xml" value="0.25364583333333335" />

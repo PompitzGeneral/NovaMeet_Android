@@ -294,7 +294,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun showRoomActivity(roomId: String?, isRoomOwner: Boolean) {
-
         // Get default uri.
         val uri: String? =
             sharedPref!!.getString(getString(R.string.pref_signalingserver_uri), getString(R.string.pref_signalingserver_uri))
