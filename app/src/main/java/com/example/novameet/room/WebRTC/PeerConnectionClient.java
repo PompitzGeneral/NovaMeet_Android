@@ -750,12 +750,16 @@ public class PeerConnectionClient {
   }
 
   private void drainCandidates() {
-    if (queuedRemoteCandidates != null) {
-      Log.d(TAG, "Add " + queuedRemoteCandidates.size() + " remote candidates");
-      for (IceCandidate candidate : queuedRemoteCandidates) {
-        peerConnection.addIceCandidate(candidate);
+    try {
+      if (queuedRemoteCandidates != null) {
+        Log.d(TAG, "Add " + queuedRemoteCandidates.size() + " remote candidates");
+        for (IceCandidate candidate : queuedRemoteCandidates) {
+          peerConnection.addIceCandidate(candidate);
+        }
+        queuedRemoteCandidates = null;
       }
-      queuedRemoteCandidates = null;
+    } catch (Exception e) {
+      e.printStackTrace();
     }
   }
 

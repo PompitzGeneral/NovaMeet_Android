@@ -68,7 +68,6 @@ class MessageListAdapter(
 
     fun setItems(items: ArrayList<ChatMessage>) {
         messageList = items
-
         notifyDataSetChanged()
     }
 

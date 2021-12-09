@@ -17,7 +17,6 @@ import okhttp3.RequestBody
 
 class RetrofitManager {
     private val BASE_URL = "https://www.novameet.ga"
-//    private val BASE_URL = "http://192.168.219.184:5000"
     private val TAG: String = "[RetrofitManager]"
 
     companion object{
@@ -325,6 +324,29 @@ class RetrofitManager {
                     Gson().fromJson<DeleteRoomResponse>(response.body(), DeleteRoomResponse::class.java)
                 if (response.code() == 200) {
                     completion(deleteRoomResponse)
+                } else {
+                    // badgate -> 504
+                    // completion(loginResponse)
+                }
+            }
+        })
+    }
+
+    fun requestUpdateDailyFocusTime(userIdx: Int, dailyFocusTime: Int, completion: (UpdateDailyFocusTimeResponse) -> Unit) {
+        var call = iRetrofit?.requestUpdateDailyFocusTime(userIdx, dailyFocusTime) ?: return
+        call.enqueue(object: Callback<JsonElement>{
+            override fun onFailure(call: Call<JsonElement>, t: Throwable) {
+                Log.d(TAG, "requestUpdateDailyFocusTime - onFailure: ")
+            }
+
+            override fun onResponse(call: Call<JsonElement>, response: Response<JsonElement>) {
+                Log.d(TAG, "requestUpdateDailyFocusTime - onResponse: ${response.body()} ")
+                Log.d(TAG, "requestUpdateDailyFocusTime - onResponse: status code is ${response.code()}")
+
+                val updateDailyFocusTimeResponse =
+                    Gson().fromJson<UpdateDailyFocusTimeResponse>(response.body(), UpdateDailyFocusTimeResponse::class.java)
+                if (response.code() == 200) {
+                    completion(updateDailyFocusTimeResponse)
                 } else {
                     // badgate -> 504
                     // completion(loginResponse)

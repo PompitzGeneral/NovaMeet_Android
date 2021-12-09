@@ -79,13 +79,17 @@ class MainActivity : AppCompatActivity() {
         if (result.resultCode == Activity.RESULT_OK) {
             val intent = result.data
 
+            val userIdx: Int = intent?.extras?.getInt("userIdx") ?: 0;
             val userID: String? = intent?.extras?.getString("userEmail");
             val userDisplayName: String? = intent?.extras?.getString("userDisplayName");
             val userImageUrl: String? = intent?.extras?.getString("userImageUrl");
+            val dailyFocusTime: Int = intent?.extras?.getInt("dailyFocusTime") ?: 0;
             user = User(
+                userIdx = userIdx,
                 userID = userID,
                 userDisplayName = userDisplayName,
                 userImageUrl = userImageUrl,
+                dailyFocusTime = dailyFocusTime
             )
 
             isLoggedIn = true;
@@ -114,7 +118,17 @@ class MainActivity : AppCompatActivity() {
             val roomId: String? = result.data?.extras?.getString("roomId")
 
             showRoomActivity(roomId, true)
-            //Todo. homeFragment Refresh
+        }
+    }
+
+    val startForEnterRoomResult = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+            result: ActivityResult ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val intent = result.data
+            val loginUser: User? = intent?.extras?.getSerializable("userInfo") as User
+            loginUser?.let {
+                this.user = loginUser
+            }
         }
     }
 
@@ -158,12 +172,18 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
                 R.id.navigation_record -> {
-                    replaceFragment(recordFragment)
+                    if (user != null) {
+                        replaceFragment(recordFragment)
+                    } else {
+                        val myToast = Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT)
+                        myToast.show()
+                    }
                 }
             }
             true
         }
     }
+
 
     private fun replaceFragment(fragment: Fragment) {
         supportFragmentManager
@@ -230,7 +250,7 @@ class MainActivity : AppCompatActivity() {
     // HomeFragment
     private fun onRoomClicked(roomId: String?, hasPassword: Boolean) {
         if (user != null) {
-            if (hasPassword ?: false) {
+            if (hasPassword) {
                 showRoomPasswordDlg(roomId)
             } else {
                 requestJoinRoom(user?.userID, roomId, null)
@@ -546,7 +566,8 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra(WebRTCProperties.EXTRA_ID, id)
         }
 
-        startActivity(intent)
+        startForEnterRoomResult.launch(intent)
+        //startActivity(intent)
     }
 
     @TargetApi(Build.VERSION_CODES.M)

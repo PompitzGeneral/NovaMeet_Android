@@ -1,39 +1,30 @@
 package com.example.novameet.room
 
 import android.annotation.TargetApi
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.PendingIntent
 import android.app.Service
 import android.content.Intent
-import android.content.ServiceConnection
-import android.content.SharedPreferences
-import android.os.Binder
-import android.os.Build
-import android.os.Build.VERSION_CODES
-import android.os.IBinder
+import android.os.*
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.View
 import android.view.WindowManager
-import androidx.annotation.IntRange
-import androidx.annotation.RequiresApi
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.NotificationCompat
-import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.novameet.R
 import com.example.novameet.model.User
+import com.example.novameet.network.RetrofitManager
 import com.example.novameet.room.WebRTC.DataChannelParameters
 import com.example.novameet.room.WebRTC.PeerConnectionParameters
 import com.example.novameet.room.WebRTC.RoomConnectionParameters
 import com.example.novameet.room.chat.ChatManager
 import com.example.webrtcmultipleandroidsample.WebRTC.WebRTCProperties
 import org.webrtc.EglBase
-import kotlin.concurrent.thread
+import java.util.*
+import kotlin.concurrent.timer
 
 class RoomService : Service() {
 
+    private val TAG = "RoomService"
     // For WebRTC
     private var roomConnectionParameters: RoomConnectionParameters? = null
     private var peerConnectionParameters: PeerConnectionParameters? = null
@@ -43,11 +34,22 @@ class RoomService : Service() {
     // For Chat
     var chatManager: ChatManager? = null
 
+    // For User's Focus Time
+    private var userInfo: User? = null
+    private var recordEvents: RecordBottomSheetDlgEvent? = null
+
+    private var focusTimer: Timer? = null
+    private var isFocusTimerRunning:Boolean = false
+
+    private val handler = Handler(Looper.getMainLooper());
+
     override fun onBind(intent: Intent): IBinder {
         return RoomServiceBinder()
     }
 
     override fun onUnbind(intent: Intent?): Boolean {
+        stopFocusTimer()
+        saveFocusTime()
         return super.onUnbind(intent)
     }
 
@@ -80,7 +82,7 @@ class RoomService : Service() {
         webRTCManager?.stop()
     }
 
-    fun setChatManager(userInfo: User?, roomID: String?) {
+    fun setChatManager(roomID: String?) {
         chatManager = ChatManager(
             userInfo?.userID,
             userInfo?.userDisplayName,
@@ -103,6 +105,39 @@ class RoomService : Service() {
 
     fun setMicEnabled(isEnabled: Boolean) {
         webRTCManager?.setMicEnabled(isEnabled)
+    }
+
+    fun setUserInfo(userInfo: User?) {
+        this.userInfo = userInfo
+    }
+
+    fun setRecordBottomSheetDlgEvent(events: RecordBottomSheetDlgEvent) {
+        this.recordEvents = events
+    }
+
+    fun startFocusTimer() {
+        // 이미 타이머 실행중인 경우 리턴
+        if (isFocusTimerRunning) {
+            return
+        }
+        isFocusTimerRunning = true
+        focusTimer = timer(period = 1000) {
+            userInfo?.let {
+                // 집중시간 1씩 증가시키고, RecordBottomSheetDlg 화면에 업데이트
+                runOnUiThread {
+                    recordEvents?.onUpdatedFocusTime(++it.dailyFocusTime)
+                }
+            }
+        }
+    }
+
+    fun stopFocusTimer() {
+        // 이미 타이머 종료상태인 경우 리턴
+        if (!isFocusTimerRunning) {
+            return
+        }
+        isFocusTimerRunning = false
+        focusTimer?.cancel();
     }
 
     private fun initParameters(intent: Intent) {
@@ -181,6 +216,25 @@ class RoomService : Service() {
             flags = flags or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         }
         return flags
+    }
+
+    private fun saveFocusTime() {
+        if (userInfo?.userIdx == null && userInfo?.userIdx == null){
+            return;
+        }
+        RetrofitManager.instance.requestUpdateDailyFocusTime(userIdx=userInfo?.userIdx!!, dailyFocusTime=userInfo?.dailyFocusTime!!, completion = { loginResponse ->
+            if (loginResponse.responseCode == 1) {
+                Log.d(TAG, "saveFocusTime: saved Success")
+            } else if (loginResponse.responseCode == -1) {
+                Log.d(TAG, "saveFocusTime: saved Failed")
+            }  else {
+                Log.d(TAG, "saveFocusTime: Error")
+            }
+        })
+    }
+
+    private fun runOnUiThread(runnable: Runnable) {
+        handler?.post(runnable)
     }
 
     inner class RoomServiceBinder : Binder() {

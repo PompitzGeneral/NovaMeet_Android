@@ -96,7 +96,7 @@ class ChatManager(
                                 userImageUrl: String?,
                                 messageText: String?,
                                 timestamp: Long) {
-        var senderUser = User(userID, userDisplayName, userImageUrl);
+        var senderUser = User(0, userID, userDisplayName, userImageUrl, 0);
         var chatMessage = ChatMessage(messageText, senderUser, timestamp)
         messageList.add(chatMessage)
 

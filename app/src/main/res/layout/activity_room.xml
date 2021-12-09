@@ -32,17 +32,17 @@
         app:layout_constraintBottom_toBottomOf="@+id/mainFab"
         app:layout_constraintStart_toStartOf="@id/mainFab"
         app:layout_constraintEnd_toEndOf="@id/mainFab"/>
-<!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
-<!--        android:id="@+id/memberFab"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:src="@drawable/ic_baseline_people_outline_24"-->
-<!--        android:backgroundTint="@color/gray_fab"-->
-<!--        app:borderWidth="0dp"-->
-<!--        app:layout_constraintTop_toTopOf="@id/mainFab"-->
-<!--        app:layout_constraintBottom_toBottomOf="@+id/mainFab"-->
-<!--        app:layout_constraintStart_toStartOf="@id/mainFab"-->
-<!--        app:layout_constraintEnd_toEndOf="@id/mainFab"/>-->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/recordFab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_baseline_alarm_24"
+        android:backgroundTint="@color/gray_fab"
+        app:borderWidth="0dp"
+        app:layout_constraintTop_toTopOf="@id/mainFab"
+        app:layout_constraintBottom_toBottomOf="@+id/mainFab"
+        app:layout_constraintStart_toStartOf="@id/mainFab"
+        app:layout_constraintEnd_toEndOf="@id/mainFab"/>
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/chatFab"
         android:layout_width="wrap_content"

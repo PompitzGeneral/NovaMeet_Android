@@ -5,4 +5,4 @@ data class UpdateUserInfoResponse(
     val user_id: String?,
     val user_displayname: String?,
     val user_image: String?
-    )
+)

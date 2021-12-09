@@ -39,7 +39,7 @@ object RetrofitClient {
                     .addConverterFactory(GsonConverterFactory.create())
                     .client(client.build())
                     .build()
-            }catch(e: Exception){
+            } catch (e: Exception) {
                 Log.d(TAG, "getClient: ${e}");
             }
         }

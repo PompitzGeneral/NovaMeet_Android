@@ -272,4 +272,6 @@
 
     <!--Manifest Room Service Description-->
     <string name="room_service_description">화상채팅방 로직 및 채팅 로직을 서비스로 돌림</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

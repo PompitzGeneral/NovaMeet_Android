@@ -423,7 +423,7 @@ class WebRTCManager(
             var isRemoteAudioEnabled        = (message.get(i) as JSONObject).get("isAudioEnabled") as Boolean
 
             // User 정보 관리
-            var user = User(senderUserID, senderUserDisplayName, senderUserImageUrl)
+            var user = User(0, senderUserID, senderUserDisplayName, senderUserImageUrl, 0)
             socketIDToUserPairs.put(senderSocketID, user)
 
             // Todo. 나중에는 SignalingParameter를 N개로 나눠야한다. 왜냐하면 iceCandidate가 Peer마다 다르기 때문
@@ -476,7 +476,7 @@ class WebRTCManager(
         var isRemoteAudioEnabled = message.getBoolean("isVideoEnabled")
 
         // User 정보 관리
-        var user = User(senderUserID, senderUserDisplayName, senderUserImageUrl)
+        var user = User(0, senderUserID, senderUserDisplayName, senderUserImageUrl, 0)
         socketIDToUserPairs.put(senderSocketID, user)
 
         // 1. createPeerConnection & SetLocalDescription

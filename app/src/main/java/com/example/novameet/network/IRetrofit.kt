@@ -78,4 +78,11 @@ interface IRetrofit {
     fun requestDeleteRoom(
         @Field("roomID") roomId: String?,
     ): Call<JsonElement>
+
+    @FormUrlEncoded
+    @POST("api/updateDailyFocusTime")
+    fun requestUpdateDailyFocusTime(
+        @Field("userIdx") userIdx: Int,
+        @Field("dailyFocusTime") dailyFocusTime: Int,
+    ): Call<JsonElement>
 }

@@ -58,7 +58,6 @@ class LoginActivity : AppCompatActivity() {
         }
 
         binding.btnRegister.setOnClickListener {
-//            startActivity(Intent(this, RegisterActivity::class.java))
             doRegisterActivityForResult()
         }
     }
@@ -86,9 +85,11 @@ class LoginActivity : AppCompatActivity() {
                 val resultToast = Toast.makeText(this.applicationContext, "로그인 성공", Toast.LENGTH_SHORT)
                 resultToast.show()
                 var resultIntent = Intent()
+                resultIntent.putExtra("userIdx", loginResponse.user_idx)
                 resultIntent.putExtra("userEmail", loginResponse.user_id)
                 resultIntent.putExtra("userDisplayName", loginResponse.user_displayname)
                 resultIntent.putExtra("userImageUrl", loginResponse.user_image_url)
+                resultIntent.putExtra("dailyFocusTime", loginResponse.dailyFocusTime)
                 setResult(RESULT_OK, resultIntent)
                 finish();
             } else {

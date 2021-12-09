@@ -17,7 +17,6 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.example.novameet.databinding.ActivityRoomBinding
 import com.example.novameet.model.User
 import com.example.novameet.R
-import com.example.novameet.model.ChatMessage
 import com.example.novameet.room.chat.ChatActivity
 import com.example.novameet.network.RetrofitManager
 import com.example.novameet.room.WebRTC.*
@@ -25,7 +24,7 @@ import com.example.novameet.room.WebRTC.*
 import com.example.webrtcmultipleandroidsample.WebRTC.WebRTCProperties
 import org.webrtc.*
 
-class RoomActivity : AppCompatActivity() {
+class RoomActivity : AppCompatActivity(), RecordBottomSheetDlgEvent {
     private val TAG : String = "RoomActivity"
 
     private val binding: ActivityRoomBinding by lazy { ActivityRoomBinding.inflate(layoutInflater) }
@@ -41,16 +40,20 @@ class RoomActivity : AppCompatActivity() {
     private var isVideoEnabled = true
     private var isMicEnabled = true
 
+    private var recordBottomSheetDlg: RecordBottomSheetDlg? = RecordBottomSheetDlg(this)
+
     // region Bind Service
     private val binderExtendedServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             roomServiceBinder = service as RoomService.RoomServiceBinder
 
-            // Todo. 리팩토링 필요
+            roomServiceBinder?.service?.setUserInfo(loginUser)
+            roomServiceBinder?.service?.setRecordBottomSheetDlgEvent(this@RoomActivity)
+
             roomServiceBinder?.service?.setWebRTCManager(intent, rootEglBase, binding.recyclerView)
             roomServiceBinder?.service?.startWebRTCManager()
 
-            roomServiceBinder?.service?.setChatManager(loginUser, roomId)
+            roomServiceBinder?.service?.setChatManager(roomId)
             roomServiceBinder?.service?.startChatManager()
 
             val myToast = Toast.makeText(applicationContext,
@@ -115,6 +118,21 @@ class RoomActivity : AppCompatActivity() {
         startRoomService()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+    }
+
+    override fun onBackPressed() {
+        setRoomActivityResult()
+        super.onBackPressed()
+    }
+
+    private fun setRoomActivityResult() {
+        var resultIntent = Intent()
+        resultIntent.putExtra("userInfo", loginUser)
+        setResult(RESULT_OK, resultIntent)
+    }
+
     private fun startRoomService() {
         Intent(this, RoomService::class.java).run {
             bindService(this, binderExtendedServiceConnection, Service.BIND_AUTO_CREATE)
@@ -150,6 +168,8 @@ class RoomActivity : AppCompatActivity() {
                 }
                 ObjectAnimator.ofFloat(binding.callEndFab, "translationY", movingDistance).apply { start() }
                 movingDistance += margin
+                ObjectAnimator.ofFloat(binding.recordFab, "translationY", movingDistance).apply { start() }
+                movingDistance += margin
                 ObjectAnimator.ofFloat(binding.chatFab, "translationY", movingDistance).apply { start() }
                 movingDistance += margin
                 ObjectAnimator.ofFloat(binding.micFab, "translationY", movingDistance).apply { start() }
@@ -159,6 +179,7 @@ class RoomActivity : AppCompatActivity() {
                 mainFabIsOpen = false
                 ObjectAnimator.ofFloat(binding.deleteRoomFab, "translationY", 0f).apply { start() }
                 ObjectAnimator.ofFloat(binding.callEndFab, "translationY", 0f).apply { start() }
+                ObjectAnimator.ofFloat(binding.recordFab, "translationY", 0f).apply { start() }
                 ObjectAnimator.ofFloat(binding.chatFab, "translationY", 0f).apply { start() }
                 ObjectAnimator.ofFloat(binding.micFab, "translationY", 0f).apply { start() }
                 ObjectAnimator.ofFloat(binding.videoFab, "translationY", 0f).apply { start() }
@@ -169,13 +190,19 @@ class RoomActivity : AppCompatActivity() {
         }
         binding.callEndFab.setOnClickListener {
             stopRoomService()
+            setRoomActivityResult()
             finish()
         }
         binding.chatFab.setOnClickListener {
             var intent = Intent(this, ChatActivity::class.java)
             intent.putExtra("loginUserID", loginUser?.userID)
-
             startActivity(intent)
+        }
+
+        binding.recordFab.setOnClickListener {
+            this.recordBottomSheetDlg?.show(supportFragmentManager, TAG)
+            // 집중시간 기록 다이얼로그에 표시되는 집중시간 값 초기화
+            recordBottomSheetDlg?.updateFocusTimeView(loginUser?.dailyFocusTime ?: 0)
         }
 
         /*
@@ -249,5 +276,21 @@ class RoomActivity : AppCompatActivity() {
         // 2. Chat Server에게 leave_all 요청
         // gChatSocket.emit('leave_all');
         // 응답 받았을 때 stopRoomService
+    }
+
+    override fun onDlgCreateView() {
+        this.recordBottomSheetDlg?.updateFocusTimeView(loginUser?.dailyFocusTime ?: 0)
+    }
+
+    override fun onRecordStartButtonClicked() {
+        this.roomServiceBinder?.service?.startFocusTimer()
+    }
+
+    override fun onRecordStopButtonClicked() {
+        this.roomServiceBinder?.service?.stopFocusTimer()
+    }
+
+    override fun onUpdatedFocusTime(focusTime: Int) {
+        this.recordBottomSheetDlg?.updateFocusTimeView(focusTime)
     }
 }
