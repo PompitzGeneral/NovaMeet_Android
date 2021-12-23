@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp">
+    <ImageView
+        android:id="@+id/item_imageview_user_img"
+        android:layout_width="43dp"
+        android:layout_height="50dp"
+        android:src="@mipmap/ic_launcher" />
+    <TextView
+        android:id="@+id/item_txtview_user_id"
+        android:text="User ID"
+        android:textSize="18dp"
+        android:textColor="@color/black"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_gravity="center"
+        android:layout_width="240dp"
+        android:layout_height="wrap_content"/>
+    <Button
+        android:id="@+id/item_btn_push"
+        android:layout_width="100dp"
+        android:layout_height="50dp"
+        android:text="초대"
+        android:background="@drawable/round_button"
+        android:textAlignment="center"
+        android:gravity="center"
+        android:textSize="20dp">
+    </Button>
+</LinearLayout>

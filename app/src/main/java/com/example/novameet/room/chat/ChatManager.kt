@@ -48,9 +48,7 @@ class ChatManager(
     fun sendChatMessage(messageText: String?) {
         var messageName = "sendMessage"
         var message = "${messageName};${messageText}"
-        thread {
-            tcpClient.sendData(message)
-        }
+        tcpClient.sendData(message)
     }
 
     fun sendLeaveAll() {
@@ -108,7 +106,7 @@ class ChatManager(
     }
 
     private fun connect() {
-        tcpClient.connect( 5001)
+        tcpClient.connect( "www.novameet.ga", 5001)
     }
 
     private fun disconnect() {

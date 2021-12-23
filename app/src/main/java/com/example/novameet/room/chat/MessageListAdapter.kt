@@ -40,8 +40,7 @@ class MessageListAdapter(
         }
     }
 
-    private inner class ReceivedMessageHolder(private val binding : ItemChatMessageOtherBinding):
-        RecyclerView.ViewHolder(binding.root) {
+    private inner class ReceivedMessageHolder(private val binding : ItemChatMessageOtherBinding): RecyclerView.ViewHolder(binding.root) {
 
         fun bind(message: ChatMessage) {
             binding.textChatMessageOther.text = message.message

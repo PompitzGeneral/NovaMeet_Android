@@ -24,7 +24,7 @@ class ChatActivity : AppCompatActivity(), ChatEvents {
             roomServiceBinder = service as RoomService.RoomServiceBinder
 
             val myToast = Toast.makeText(applicationContext,
-                "BinderExtendedService - onServiceConnected",
+                "ChatActivity - onServiceConnected",
                 Toast.LENGTH_SHORT)
             myToast.show()
 
@@ -100,7 +100,6 @@ class ChatActivity : AppCompatActivity(), ChatEvents {
                 adapter?.notifyItemInserted(adapter?.itemCount - 1)
                 binding?.rvChat?.smoothScrollToPosition(adapter?.itemCount - 1)
 //                adapter?.notifyDataSetChanged()
-
             }
         }
     }
@@ -112,8 +111,4 @@ class ChatActivity : AppCompatActivity(), ChatEvents {
     override fun onDisconnected() {
         TODO("Not yet implemented")
     }
-
-    /*
-     * TCP Chat Events
-     */
 }

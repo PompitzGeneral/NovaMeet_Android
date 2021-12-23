@@ -8,12 +8,16 @@ import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.widget.Toast
 
 import android.os.Bundle
+import android.os.PowerManager
+import android.provider.Settings
 import android.util.Log
 import android.widget.ArrayAdapter
 import android.widget.EditText
@@ -43,8 +47,11 @@ import java.util.ArrayList
 import android.widget.LinearLayout
 
 import android.view.LayoutInflater
-
-
+import com.example.novameet.network.RetrofitClient
+import android.webkit.CookieManager
+import com.example.novameet.login.AutoLogin
+import com.example.novameet.pushmessage.PushMessageService
+import okhttp3.internal.notifyAll
 
 
 class MainActivity : AppCompatActivity() {
@@ -57,8 +64,11 @@ class MainActivity : AppCompatActivity() {
     private val binding: ActivityMainBinding by lazy { ActivityMainBinding.inflate(layoutInflater) }
     private val homeFragment by lazy { HomeFragment() }
     private val recordFragment by lazy { RecordFragment() }
+    private var bottomNavSelectedId = R.id.navigation_home;
     private var isLoggedIn = false;
     private var user: User? = null;
+
+    private var pushMessageServiceIntent: Intent? = null
 
     // build.gradle에 ' implementation "androidx.preference:preference-ktx:1.1.+" ' 추가
     private fun getSharedPref(context: Context): SharedPreferences? {
@@ -84,19 +94,11 @@ class MainActivity : AppCompatActivity() {
             val userDisplayName: String? = intent?.extras?.getString("userDisplayName");
             val userImageUrl: String? = intent?.extras?.getString("userImageUrl");
             val dailyFocusTime: Int = intent?.extras?.getInt("dailyFocusTime") ?: 0;
-            user = User(
-                userIdx = userIdx,
-                userID = userID,
-                userDisplayName = userDisplayName,
-                userImageUrl = userImageUrl,
-                dailyFocusTime = dailyFocusTime
-            )
 
-            isLoggedIn = true;
+            setLoggedInStatus(userIdx, userID, userDisplayName, userImageUrl, dailyFocusTime)
 
-            setProfileImage(userImageUrl)
-
-            refreshVisiblityToolbarMenu()
+            // Immortal 서비스 종료 시킨 후 자동 재시작되며, Shared에서 유저 정보 가져온 후 Join 시도
+            stopPushMessageService()
         }
     }
 
@@ -132,16 +134,88 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun setLoggedInStatus(userIdx:Int, userID:String?, userDisplayName:String?, userImageUrl:String?, dailyFocusTime:Int) {
+        user = User(
+            userIdx = userIdx,
+            userID = userID,
+            userDisplayName = userDisplayName,
+            userImageUrl = userImageUrl,
+            dailyFocusTime = dailyFocusTime
+        )
+
+        isLoggedIn = true;
+
+        setProfileImage(userImageUrl)
+
+        refreshVisiblityToolbarMenu()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+
         homeFragment?.setRoomClickCallback { roomId, hasPassword ->
-            onRoomClicked(roomId, hasPassword)
+            enterRoom(roomId, hasPassword)
         }
+
+        requestPermissions()
+        // 데이터 복구
+        savedInstanceState?.let {
+            bottomNavSelectedId = it.getInt("bottomNavSelectedId")
+            isLoggedIn = it.getBoolean("isLoggedIn")
+            user = it.getSerializable("userInfo") as User?
+        }
+
+        if (AutoLogin.getUserId(this)?.length!! != 0) {
+            // Auto Login
+            user = User(
+                userIdx = AutoLogin.getUserIdx(this),
+                userID = AutoLogin.getUserId(this),
+                userDisplayName = AutoLogin.getUserDisplayName(this),
+                userImageUrl = AutoLogin.getUserImageUrl(this),
+                dailyFocusTime = AutoLogin.getDailyFocusTime(this)
+            )
+
+            isLoggedIn = true;
+        }
+
         initAppbar()
         initBottomNavigation()
 
-        requestPermissions()
+        if (isLoggedIn) {
+            user?.let {
+                setProfileImage(user?.userImageUrl)
+            }
+        }
+
+        refreshVisiblityToolbarMenu()
+
+        startPushMessageService()
+
+        RetrofitManager.instance.setContext(applicationContext)
+
+        var fromNoti = intent.getBooleanExtra("isEnteredFromNotification", false)
+        if (fromNoti) {
+            var roomID = intent.getStringExtra("roomID")
+            // Todo. check hasPassword
+            enterRoom(roomID, true)
+            // fase로 두지 않으면, 이 후에 메인화면 진입 시 계속 enterRoom 메서드 호출한다
+            intent.putExtra("isEnteredFromNotification", false)
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+        stopPushMessageService()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+
+        outState.putInt("bottomNavSelectedId", bottomNavSelectedId)
+        outState.putBoolean("isLoggedIn", isLoggedIn)
+        outState.putSerializable("userInfo", user)
     }
 
     private fun initAppbar() {
@@ -154,36 +228,58 @@ class MainActivity : AppCompatActivity() {
         refreshVisiblityToolbarMenu()
     }
 
-    private fun initBottomNavigation() {
-
-        replaceFragment(homeFragment)
-
-        binding.bottomNavView.setOnNavigationItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.navigation_home -> {
-                    replaceFragment(homeFragment)
+    private fun changeBottomNavView(selectedItemId: Int) {
+        when (selectedItemId) {
+            R.id.navigation_home -> {
+                // Home Fragment에서는 Activity 세로 방향으로 고정
+                try {
+                    // API 26 에서만 "Only fullscreen opaque activities can request orientation" 에러 발생
+                    // 출처: https://gun0912.tistory.com/79 [박상권의 삽질블로그]
+                    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                } catch (e: Exception){
+                    e.printStackTrace()
                 }
-                R.id.navigation_room_create -> {
-                    if (isLoggedIn) {
-                        doCreateRoomActivityForResult()
-                    } else {
-                        val myToast = Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT)
-                        myToast.show()
-                    }
-                }
-                R.id.navigation_record -> {
-                    if (user != null) {
-                        replaceFragment(recordFragment)
-                    } else {
-                        val myToast = Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT)
-                        myToast.show()
-                    }
+                replaceFragment(homeFragment)
+            }
+            R.id.navigation_room_create -> {
+                if (isLoggedIn) {
+                    doCreateRoomActivityForResult()
+                } else {
+                    val myToast = Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT)
+                    myToast.show()
                 }
             }
-            true
+            R.id.navigation_record -> {
+                if (user != null) {
+                    // Home Fragment에서는 Activity 가로 방향으로 고정
+                    try {
+                        // API 26 에서만 "Only fullscreen opaque activities can request orientation" 에러 발생
+                        // 출처: https://gun0912.tistory.com/79 [박상권의 삽질블로그]
+                        requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
+                    } catch (e: Exception){
+                        e.printStackTrace()
+                    }
+                    replaceFragment(recordFragment)
+                } else {
+                    val myToast = Toast.makeText(this, "로그인이 필요합니다.", Toast.LENGTH_SHORT)
+                    myToast.show()
+                }
+            }
         }
     }
 
+    private fun initBottomNavigation() {
+        binding.bottomNavView.selectedItemId = this.bottomNavSelectedId
+
+        changeBottomNavView(this.bottomNavSelectedId)
+
+        binding.bottomNavView.setOnNavigationItemSelectedListener { item ->
+            this.bottomNavSelectedId = item.itemId;
+            changeBottomNavView(item.itemId)
+
+            true
+        }
+    }
 
     private fun replaceFragment(fragment: Fragment) {
         supportFragmentManager
@@ -201,7 +297,7 @@ class MainActivity : AppCompatActivity() {
     fun setProfileImage(uri: String?){
         val userImageView = binding.imageviewUserImage
         try {
-            if(!uri.isNullOrEmpty()) {
+            if (!uri.isNullOrEmpty()) {
                 userImageView?.let {
                     Glide.with(this)?.load(uri)?.apply(RequestOptions()?.circleCrop()).into(it)
                 }
@@ -219,6 +315,11 @@ class MainActivity : AppCompatActivity() {
                 user = null
 
                 refreshVisiblityToolbarMenu()
+
+                AutoLogin.clearUserInfo(this)
+
+                // Immortal 서비스 종료 시킨 후 자동 재시작되며, Shared에서 유저 정보 가져온 후 Join 시도
+                stopPushMessageService()
 
                 val resultToast = Toast.makeText(this, "로그아웃 성공", Toast.LENGTH_SHORT)
                 resultToast.show()
@@ -248,7 +349,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // HomeFragment
-    private fun onRoomClicked(roomId: String?, hasPassword: Boolean) {
+    private fun enterRoom(roomId: String?, hasPassword: Boolean) {
         if (user != null) {
             if (hasPassword) {
                 showRoomPasswordDlg(roomId)
@@ -567,7 +668,35 @@ class MainActivity : AppCompatActivity() {
         }
 
         startForEnterRoomResult.launch(intent)
-        //startActivity(intent)
+    }
+
+    private fun startPushMessageService() {
+        val pm = applicationContext.getSystemService(POWER_SERVICE) as PowerManager
+        var isWhiteListing = false
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            isWhiteListing = pm.isIgnoringBatteryOptimizations(applicationContext.packageName)
+        }
+        if (!isWhiteListing) {
+            val intent = Intent()
+            intent.action = Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS
+            intent.data = Uri.parse("package:" + applicationContext.packageName)
+            startActivity(intent)
+        }
+
+        if (PushMessageService.serviceIntent == null) {
+            pushMessageServiceIntent = Intent(this, PushMessageService::class.java)
+            startService(pushMessageServiceIntent)
+        } else {
+            pushMessageServiceIntent = PushMessageService.serviceIntent
+            // Toast.makeText(applicationContext, "Already PushMessageService Running", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    private fun stopPushMessageService() {
+        if (pushMessageServiceIntent != null) {
+            stopService(pushMessageServiceIntent)
+            pushMessageServiceIntent = null
+        }
     }
 
     @TargetApi(Build.VERSION_CODES.M)

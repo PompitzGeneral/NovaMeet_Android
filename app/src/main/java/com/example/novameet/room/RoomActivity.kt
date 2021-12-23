@@ -170,6 +170,8 @@ class RoomActivity : AppCompatActivity(), RecordBottomSheetDlgEvent {
                 movingDistance += margin
                 ObjectAnimator.ofFloat(binding.recordFab, "translationY", movingDistance).apply { start() }
                 movingDistance += margin
+                ObjectAnimator.ofFloat(binding.loggedInUsersFab, "translationY", movingDistance).apply { start() }
+                movingDistance += margin
                 ObjectAnimator.ofFloat(binding.chatFab, "translationY", movingDistance).apply { start() }
                 movingDistance += margin
                 ObjectAnimator.ofFloat(binding.micFab, "translationY", movingDistance).apply { start() }
@@ -180,6 +182,7 @@ class RoomActivity : AppCompatActivity(), RecordBottomSheetDlgEvent {
                 ObjectAnimator.ofFloat(binding.deleteRoomFab, "translationY", 0f).apply { start() }
                 ObjectAnimator.ofFloat(binding.callEndFab, "translationY", 0f).apply { start() }
                 ObjectAnimator.ofFloat(binding.recordFab, "translationY", 0f).apply { start() }
+                ObjectAnimator.ofFloat(binding.loggedInUsersFab, "translationY", 0f).apply { start() }
                 ObjectAnimator.ofFloat(binding.chatFab, "translationY", 0f).apply { start() }
                 ObjectAnimator.ofFloat(binding.micFab, "translationY", 0f).apply { start() }
                 ObjectAnimator.ofFloat(binding.videoFab, "translationY", 0f).apply { start() }
@@ -198,7 +201,12 @@ class RoomActivity : AppCompatActivity(), RecordBottomSheetDlgEvent {
             intent.putExtra("loginUserID", loginUser?.userID)
             startActivity(intent)
         }
-
+        binding.loggedInUsersFab.setOnClickListener {
+            var intent = Intent(this, LoggedInUsersActivity::class.java)
+            intent.putExtra("loginUserID", loginUser?.userID)
+            intent.putExtra("roomID", roomId)
+            startActivity(intent)
+        }
         binding.recordFab.setOnClickListener {
             this.recordBottomSheetDlg?.show(supportFragmentManager, TAG)
             // 집중시간 기록 다이얼로그에 표시되는 집중시간 값 초기화

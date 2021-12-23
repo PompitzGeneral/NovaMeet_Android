@@ -1,5 +1,7 @@
 package com.example.novameet.network
+import androidx.preference.PreferenceManager
 
+import android.content.Context
 import android.util.Log
 import com.example.novameet.model.Room
 import com.example.novameet.model.response.*
@@ -15,18 +17,24 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody
 
 
-class RetrofitManager {
+class RetrofitManager() {
     private val BASE_URL = "https://www.novameet.ga"
     private val TAG: String = "[RetrofitManager]"
+
+    private var appContext: Context? = null;
 
     companion object{
         val instance = RetrofitManager()
     }
 
-    private val iRetrofit: IRetrofit? = RetrofitClient.getClient(BASE_URL)?.create(IRetrofit::class.java)
+    private val iRetrofit: IRetrofit? = RetrofitClient.getClient(BASE_URL, appContext)?.create(IRetrofit::class.java)
 
+    fun setContext(context: Context) {
+        appContext = context
+    }
     fun requestLogin(userEmail: String?, password: String?, completion: (LoginResponse) -> Unit) {
         var call = iRetrofit?.requestLogin(userEmail, password) ?: return
+
         call.enqueue(object: Callback<JsonElement>{
             override fun onFailure(call: Call<JsonElement>, t: Throwable) {
                 Log.d(TAG, "login - onFailure: ")
@@ -35,6 +43,13 @@ class RetrofitManager {
             override fun onResponse(call: Call<JsonElement>, response: Response<JsonElement>) {
                 Log.d(TAG, "login - onResponse: ${response.body()} ")
                 Log.d(TAG, "login - onResponse: status code is ${response.code()}")
+                Log.d(TAG, "login - onResponse: header is : ${response.headers()} ")
+
+                val cookielist = response.headers().values("Set-Cookie")
+                if (cookielist.size > 0) {
+                    var sessionCookie = cookielist.get(0)
+                    android.webkit.CookieManager.getInstance()?.setCookie("https://www.novameet.ga", sessionCookie)
+                }
 
                 val loginResponse = Gson().fromJson<LoginResponse>(response.body(), LoginResponse::class.java)
                 if(response.code() == 200) {
@@ -190,7 +205,13 @@ class RetrofitManager {
 
                 override fun onResponse(call: Call<JsonElement>, response: Response<JsonElement>) {
                     Log.d(TAG, "requestRoomInfos - onResponse: ${response.body()} ")
+                    Log.d(TAG, "requestRoomInfos - onResponse: header is : ${response.headers()} ")
                     Log.d(TAG, "requestRoomInfos - onResponse: status code is ${response.code()}")
+                    val cookielist = response.headers().values("Set-Cookie")
+                    if (cookielist.size > 0) {
+                        var sessionCookie = cookielist.get(0)
+                        android.webkit.CookieManager.getInstance()?.setCookie("https://www.novameet.ga", sessionCookie)
+                    }
 
                     var jObject = response.body()?.asJsonObject
                     var jArray = jObject?.get("roomInfos")?.asJsonArray

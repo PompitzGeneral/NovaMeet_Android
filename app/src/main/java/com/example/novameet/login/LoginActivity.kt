@@ -84,6 +84,15 @@ class LoginActivity : AppCompatActivity() {
             } else if (loginResponse.responseCode == 1) {
                 val resultToast = Toast.makeText(this.applicationContext, "로그인 성공", Toast.LENGTH_SHORT)
                 resultToast.show()
+
+                saveAutoLogin(
+                    loginResponse.user_idx,
+                    loginResponse.user_id,
+                    loginResponse.user_displayname,
+                    loginResponse.user_image_url,
+                    loginResponse.dailyFocusTime
+                )
+
                 var resultIntent = Intent()
                 resultIntent.putExtra("userIdx", loginResponse.user_idx)
                 resultIntent.putExtra("userEmail", loginResponse.user_id)
@@ -96,6 +105,14 @@ class LoginActivity : AppCompatActivity() {
 
             }
         })
+    }
+
+    private fun saveAutoLogin(userIdx:Int, userId:String?, userDisplayName:String?, userImageUrl:String?, dailyFocusTime:Int) {
+        AutoLogin.setUserIdx(this, userIdx)
+        AutoLogin.setUserId(this, userId)
+        AutoLogin.setUserDisplayName(this, userDisplayName)
+        AutoLogin.setUserImageUrl(this, userImageUrl)
+        AutoLogin.setDailyFocusTime(this, dailyFocusTime)
     }
 
     private fun doRegisterActivityForResult() {
