@@ -1,5 +1,6 @@
 package com.example.novameet.room.chat
 
+import android.util.Log
 import com.example.novameet.model.ChatMessage
 import com.example.novameet.model.User
 import okhttp3.internal.immutableListOf
@@ -10,7 +11,8 @@ class ChatManager(
     val userID:String?,
     val userDisplayName: String?,
     val userImageUrl: String?,
-    val roomID: String?)
+    val roomID: String?,
+    val roomDeleteSuccessCallback: () -> Unit)
 {
     val TAG = "ChatManager"
 
@@ -52,7 +54,9 @@ class ChatManager(
     }
 
     fun sendLeaveAll() {
-        //Todo.
+        var messageName = "leave_all"
+        var message = "${messageName}"
+        tcpClient.sendData(message)
     }
 
     private fun doCommunicate() {
@@ -102,7 +106,8 @@ class ChatManager(
     }
 
     private fun receivedLeaveRoom() {
-
+        Log.d(TAG, "receivedLeaveRoom: ")
+        roomDeleteSuccessCallback?.invoke()
     }
 
     private fun connect() {

@@ -53,6 +53,9 @@
         <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/menu/tool_bar_menu.xml" value="0.4" />
         <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml" value="0.26979166666666665" />
         <entry key="..\:/Users/pompi/dev/NovaMeet_Android/app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml" value="0.26979166666666665" />
+        <entry key="app/src/main/res/layout/activity_login.xml" value="0.2572463768115942" />
+        <entry key="app/src/main/res/layout/activity_main.xml" value="0.45" />
+        <entry key="app/src/main/res/layout/activity_profile.xml" value="0.13177083333333334" />
       </map>
     </option>
   </component>

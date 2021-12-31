@@ -43,6 +43,8 @@ class RoomService : Service() {
 
     private val handler = Handler(Looper.getMainLooper());
 
+    private var roomDeleteSuccessCallback: (() -> Unit)? = null
+
     override fun onBind(intent: Intent): IBinder {
         return RoomServiceBinder()
     }
@@ -82,12 +84,13 @@ class RoomService : Service() {
         webRTCManager?.stop()
     }
 
-    fun setChatManager(roomID: String?) {
+    fun setChatManager(roomID: String?, roomDeleteSuccessCallback: () -> Unit ) {
         chatManager = ChatManager(
             userInfo?.userID,
             userInfo?.userDisplayName,
             userInfo?.userImageUrl,
-            roomID
+            roomID,
+            roomDeleteSuccessCallback
         )
     }
 

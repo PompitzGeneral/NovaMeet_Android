@@ -57,6 +57,7 @@
 
         <ImageView
             android:id="@+id/imageview_user_image"
+            app:srcCompat="@drawable/ic_person"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_marginTop="13dp"

@@ -723,18 +723,18 @@ class WebRTCManager(
     // Invoked in PCObserver.onIceConnected
     override fun onIceConnected() {
         val delta = System.currentTimeMillis() - callStartedTimeMs
-        logAndToast("ICE connected, delay=" + delta + "ms")
+        //logAndToast("ICE connected, delay=" + delta + "ms")
     }
 
     // Invoked in PCObserver.onIceConnectionChange
     override fun onIceDisconnected() {
-        logAndToast("ICE disconnected")
+        //logAndToast("ICE disconnected")
     }
 
     // Invoked in PCObserver.onConnected
     override fun onConnected(remoteUserSocketID: String?) {
         val delta = System.currentTimeMillis() - callStartedTimeMs
-        logAndToast("DTLS connected, delay=" + delta + "ms")
+        //logAndToast("DTLS connected, delay=" + delta + "ms")
         callConnected(remoteUserSocketID)
     }
     // Invoked in PCObserver.onDisconnected
@@ -784,7 +784,7 @@ class WebRTCManager(
         callStartedTimeMs = System.currentTimeMillis()
 
         // Start room connection.
-        logAndToast(applicationContext.getString(R.string.connecting_to, roomConnectionParameters!!.signalingServerUrl))
+        //logAndToast(applicationContext.getString(R.string.connecting_to, roomConnectionParameters!!.signalingServerUrl))
 
         connectToSignalingServer()
 
@@ -812,44 +812,44 @@ class WebRTCManager(
             signalingSocket?.on(Socket.EVENT_CONNECT, Emitter.Listener { args: Array<Any?>? ->
                 // SocketIO에서 관리하는 Worker Thread
                 runOnUiThread {
-                    val myToast = Toast.makeText(applicationContext, "Socket.EVENT_CONNECT", Toast.LENGTH_SHORT)
-                    myToast.show()
+//                    val myToast = Toast.makeText(applicationContext, "Socket.EVENT_CONNECT", Toast.LENGTH_SHORT)
+//                    myToast.show()
                 }
                 receivedConnectedEvent()
             })?.on("all_users", Emitter.Listener { args: Array<Any?>? ->
                 runOnUiThread {
-                    val myToast = Toast.makeText(applicationContext, "receivedAllUsersMessage", Toast.LENGTH_SHORT)
-                    myToast.show()
+//                    val myToast = Toast.makeText(applicationContext, "receivedAllUsersMessage", Toast.LENGTH_SHORT)
+//                    myToast.show()
                 }
                 receivedAllUsersMessage(args?.get(0) as JSONArray)
             })?.on("getOffer", Emitter.Listener { args: Array<Any?>? ->
                 runOnUiThread {
-                    val myToast = Toast.makeText(applicationContext, "receivedGetOfferMessage", Toast.LENGTH_SHORT)
-                    myToast.show()
+//                    val myToast = Toast.makeText(applicationContext, "receivedGetOfferMessage", Toast.LENGTH_SHORT)
+//                    myToast.show()
                 }
                 receivedGetOfferMessage(args?.get(0) as JSONObject)
             })?.on("getAnswer", Emitter.Listener { args: Array<Any?>? ->
                 runOnUiThread {
-                    val myToast = Toast.makeText(applicationContext, "receivedGetAnswerMessage", Toast.LENGTH_SHORT)
-                    myToast.show()
+//                    val myToast = Toast.makeText(applicationContext, "receivedGetAnswerMessage", Toast.LENGTH_SHORT)
+//                    myToast.show()
                 }
                 receivedGetAnswerMessage(args?.get(0) as JSONObject)
             })?.on("getCandidate", Emitter.Listener { args: Array<Any?>? ->
                 runOnUiThread {
-                    val myToast = Toast.makeText(applicationContext, "receivedGetCandidateMessage", Toast.LENGTH_SHORT)
-                    myToast.show()
+//                    val myToast = Toast.makeText(applicationContext, "receivedGetCandidateMessage", Toast.LENGTH_SHORT)
+//                    myToast.show()
                 }
                 receivedGetCandidateMessage(args?.get(0) as JSONObject)
             })?.on("mediaEnabledChanged", Emitter.Listener { args: Array<Any?>? ->
                 runOnUiThread {
-                    val myToast = Toast.makeText(applicationContext, "receivedMediaEnabledChanged", Toast.LENGTH_SHORT)
-                    myToast.show()
+//                    val myToast = Toast.makeText(applicationContext, "receivedMediaEnabledChanged", Toast.LENGTH_SHORT)
+//                    myToast.show()
                 }
                 receivedMediaEnabledChangedMessage(args?.get(0) as JSONObject)
             })?.on("user_exit", Emitter.Listener { args: Array<Any?>? ->
                 runOnUiThread {
-                    val myToast = Toast.makeText(applicationContext, "receivedUserExit", Toast.LENGTH_SHORT)
-                    myToast.show()
+//                    val myToast = Toast.makeText(applicationContext, "receivedUserExit", Toast.LENGTH_SHORT)
+//                    myToast.show()
                 }
                 receivedUserExitMessage(args?.get(0) as JSONObject)
             })

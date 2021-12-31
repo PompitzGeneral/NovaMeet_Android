@@ -42,6 +42,16 @@ class RoomActivity : AppCompatActivity(), RecordBottomSheetDlgEvent {
 
     private var recordBottomSheetDlg: RecordBottomSheetDlg? = RecordBottomSheetDlg(this)
 
+    private var roomDeleteSuccessCallback: () -> Unit = {
+        stopRoomService()
+        setRoomActivityResult()
+        var roomDeleteMessage = if (isRoomOwner) "성공적으로 화상 채팅방을 삭제했습니다." else "방장이 화상 채팅방을 삭제했습니다."
+        runOnUiThread {
+            Toast.makeText(applicationContext, roomDeleteMessage, Toast.LENGTH_SHORT).show()
+        }
+        finish()
+    }
+
     // region Bind Service
     private val binderExtendedServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -53,7 +63,7 @@ class RoomActivity : AppCompatActivity(), RecordBottomSheetDlgEvent {
             roomServiceBinder?.service?.setWebRTCManager(intent, rootEglBase, binding.recyclerView)
             roomServiceBinder?.service?.startWebRTCManager()
 
-            roomServiceBinder?.service?.setChatManager(roomId)
+            roomServiceBinder?.service?.setChatManager(roomId, roomDeleteSuccessCallback)
             roomServiceBinder?.service?.startChatManager()
 
             val myToast = Toast.makeText(applicationContext,
@@ -71,6 +81,7 @@ class RoomActivity : AppCompatActivity(), RecordBottomSheetDlgEvent {
             myToast.show()
         }
     }
+
     private var roomServiceBinder: RoomService.RoomServiceBinder? = null
     // endregion
 
@@ -125,6 +136,10 @@ class RoomActivity : AppCompatActivity(), RecordBottomSheetDlgEvent {
     override fun onBackPressed() {
         setRoomActivityResult()
         super.onBackPressed()
+    }
+
+    public fun onDeleteRoomSuccess() {
+
     }
 
     private fun setRoomActivityResult() {
@@ -282,8 +297,7 @@ class RoomActivity : AppCompatActivity(), RecordBottomSheetDlgEvent {
         })
 
         // 2. Chat Server에게 leave_all 요청
-        // gChatSocket.emit('leave_all');
-        // 응답 받았을 때 stopRoomService
+        roomServiceBinder?.service?.chatManager?.sendLeaveAll()
     }
 
     override fun onDlgCreateView() {

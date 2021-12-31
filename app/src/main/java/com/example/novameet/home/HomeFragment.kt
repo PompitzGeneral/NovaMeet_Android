@@ -48,6 +48,12 @@ class HomeFragment : Fragment() {
             //userInfo = it.getParcelable<User?>(ARG_PARAM1)
         }
 
+//        requestRoomInfos()
+    }
+
+    override fun onStart() {
+        super.onStart()
+
         requestRoomInfos()
     }
 

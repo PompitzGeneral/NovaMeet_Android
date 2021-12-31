@@ -111,6 +111,8 @@ class MainActivity : AppCompatActivity() {
 
             user?.userDisplayName = userDisplayName;
             user?.userImageUrl = userImageUrl;
+
+            setProfileImage(userImageUrl)
         }
     }
 
