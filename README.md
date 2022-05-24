@@ -17,7 +17,7 @@ Front-End : HTML/CSS, JavaScript, React.js
 Back-End : Java, Node.js(Express), Socket.io  
 ETC : WebRTC
 
-### **[주요 기능]**
+### **[주요 기능] - (이미지 클릭 시, 시연 영상 페이지로 이동)**
 
 **1. 회원가입, 로그인(웹 & 안드로이드)**  
 [![회원가입, 로그인(웹)](http://img.youtube.com/vi/4ELpOGCz1Vo/0.jpg)](https://youtu.be/4ELpOGCz1Vo) 
